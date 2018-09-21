@@ -1,5 +1,7 @@
 # error-propagation
-Quick and somewhat dirty library for error propagation of single values
+Quick and somewhat dirty library for error propagation of single values.
+
+Bugfixes, extensions generally welcome.
 
 # Basics
     In errors.py is defined a basic class intended for e.g. ipython use 
