@@ -13,10 +13,10 @@ Quick and somewhat dirty library for error propagation of single values
     global use, add directly into your python site-packages directory.
     
 # Initialisation:
-    ```
+```
           from errors import Value
           x = Value(value, error)
-    ```
+```
 # Example use:
 ```
           x = Value(1,3)         # Initialises value 1 +/- 2
