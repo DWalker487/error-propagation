@@ -9,6 +9,8 @@ Bugfixes, extensions generally welcome.
     constants and/or other Values. Floor division is not defined. Bitwise 
     addition (& operator) gives the weighted mean of two values, equivalent to
     combining two measurements.
+
+    It can also be used for error propagation of numpy arrays in a similar manner
     
 # Installation:
     To install, simply clone and add errors.py into your pythonpath. For more 
@@ -39,4 +41,15 @@ Bugfixes, extensions generally welcome.
           x == y     -> False
           x == x     -> True
           x & y      -> Value(1.36, 2.4)
+
+          >> x.percent_error
+               300.0
+
+    It is also possible to use the functionality for numpy arrays. If numpy
+    is not available this functionality is not loaded.
+    For example:
+       x = Value(np.array([1,2]),np.array([3,2]))   # Initialises Values [1,2]
+                                                    # Initialises Errors [3,2]
+       x*2 -> Value([2,4],[6,4])
+    and so on.
 ```

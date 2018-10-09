@@ -1,8 +1,11 @@
-from __future__ import division
-import math
+from __future__ import division, print_function
+try:
+    import numpy as math
+except ImportError:
+    import math
 
 
-class Value():
+class Value(object):
     """ Basic class intended for e.g. ipython use defining a value
     with associated error for easy error propagation with constants
     and/or other Values. Floor division is not defined. Bitwise addition
@@ -32,10 +35,84 @@ class Value():
           x == x     -> True
           x & y      -> Value(1.36, 2.4)
 
+          >> x.percent_error
+               300.0
+
+    It is also possible to use the functionality for numpy arrays. If numpy
+    is not available this functionality is not loaded.
+    For example:
+       x = Value(np.array([1,2]),np.array([3,2]))   # Initialises Values [1,2]
+                                                    # Initialises Errors [3,2]
+       x*2 -> Value([2,4],[6,4])
+    and so on.
     """
     def __init__(self, value, error):
-        self.value = value
-        self.error = error
+        try:  # Will not work if numpy is not loaded
+            if isinstance(value, math.ndarray):
+                assert len(value) == len(error)
+                self.__is_array = True
+            else:
+                raise AttributeError
+        except AttributeError:
+            self.__is_array = False
+        except (AssertionError, TypeError):
+            txt = "Incompatible values and errors in {0}. "
+            txt += "Check dimensions/types!"
+            raise Exception(txt.format((value, error)))
+        self._value = value
+        self._error = error
+        self._percent_error = self.__do_percent(error, value)
+
+    # Set up properties
+    @property
+    def value(self):
+        return self._value
+
+    @property
+    def error(self):
+        return self._error
+
+    @property
+    def percent_error(self):
+        """The percent property"""
+        return self._percent_error
+
+    # Aliases for easy use
+    @property
+    def err(self):
+        return self._error
+
+    @property
+    def val(self):
+        return self._val
+
+    @property
+    def percent(self):
+        """Alias for the percent property"""
+        return self._percent_error
+
+    @property
+    def pc(self):
+        """Alias for the percent property"""
+        return self._percent_error
+
+    # Set up setters for self consistency, particularly with errors
+    @value.setter
+    def value(self, new_value):
+        if self.__is_array:
+            assert len(new_value) == len(self.error)
+        self._value = new_value
+        self._percent_error = self.__do_percent(self.error, self._value)
+
+    @error.setter
+    def error(self, new_error):
+        if self.__is_array:
+            assert len(new_error) == len(self.value)
+        self._error = new_error
+        self._percent_error = self.__do_percent(self._error, self.value)
+
+    def __do_percent(self, error, value):
+        return error/value*100
 
     def __add__(self, other):
         """ Addition operator. Errors propagate with other Values.
