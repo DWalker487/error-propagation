@@ -50,11 +50,11 @@ class Value(object):
         try:  # Will not work if numpy is not loaded
             if isinstance(value, math.ndarray):
                 assert len(value) == len(error)
-                self.__is_array = True
+                self._is_array = True
             else:
                 raise AttributeError
         except AttributeError:
-            self.__is_array = False
+            self._is_array = False
         except (AssertionError, TypeError):
             txt = "Incompatible values and errors in {0}. "
             txt += "Check dimensions/types!"
@@ -99,14 +99,14 @@ class Value(object):
     # Set up setters for self consistency, particularly with errors
     @value.setter
     def value(self, new_value):
-        if self.__is_array:
+        if self._is_array:
             assert len(new_value) == len(self.error)
         self._value = new_value
         self._percent_error = self.__do_percent(self.error, self._value)
 
     @error.setter
     def error(self, new_error):
-        if self.__is_array:
+        if self._is_array:
             assert len(new_error) == len(self.value)
         self._error = new_error
         self._percent_error = self.__do_percent(self._error, self.value)
@@ -250,6 +250,28 @@ class Value(object):
         new_value = (self_wgt*self.value+other_wgt*other.value)/wgt_sum
         new_error = math.sqrt(1/wgt_sum)
         return Value(new_value, new_error)
+
+
+def std_dev_difference(value1, value2):
+    """ Returns difference in terms of standard deviations between the two
+    input values."""
+    diff = value1-value2
+    return math.abs(diff.value/diff.error)
+
+
+def chi_squared(value1, value2):
+    """Returns chi squared between two Value objects"""
+    ratio = value1/value2
+    return sum((1-ratio.value)**2/ratio.error**2)
+
+
+def chi_squared_dof(value1, value2):
+    """Returns chi squared per degree of freedom between two Value objects"""
+    chisq = chi_squared(value1, value2)
+    dof = 1.
+    if value1._is_array:
+        dof = len(value1.value)
+    return chisq/dof
 
 
 if __name__ == "__main__":
